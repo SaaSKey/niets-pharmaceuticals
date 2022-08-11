@@ -16,25 +16,32 @@ enum Cycles {
   Offset,
 }
 
-class Drug {
-  public taken: boolean = false;
-  public cycle: Cycles = Cycles.Delay;
-  public delayCycles: number = 3;
-  public onsetCycles: number = 3;
-  public plateauCycles: number = 3;
-  public offsetCycles: number = 3;
+interface Drug {
+  cycle: Cycles;
+  delayCycles: number;
+  onsetCycles: number;
+  plateauCycles: number;
+  offsetCycles: number;
 
-  public doOnset: Function = (cycle: number, player: IsoPlayer) => {};
-  public doPlateau: Function = (cycle: number, player: IsoPlayer) => {};
-  public doOffset: Function = (cycle: number, player: IsoPlayer) => {};
+  doOnset: (cycle: number, player: IsoPlayer) => void;
+  doPlateau: (cycle: number, player: IsoPlayer) => void;
+  doOffset: (cycle: number, player: IsoPlayer, totalCycles: number) => void;
 }
 
-export class AntiInflammatory extends Drug {
-  public onsetCycles: number = 100;
+export class AntiInflammatory implements Drug {
+  public cycle: Cycles = Cycles.Delay;
+  public delayCycles: number = 30;
+  public onsetCycles: number = 30;
+  public plateauCycles: number = 30;
+  public offsetCycles: number = 30;
+
   public initialStiffness: ArrayList = new ArrayList();
 
-  public doOnset: Function = (cycle: number, player: IsoPlayer) => {
-    player.Say(`Cycle number ${cycle}`);
+  public doOnset: (cycle: number, player: IsoPlayer) => void = (
+    cycle: number,
+    player: IsoPlayer
+  ) => {
+    if (cycle == 0) player.Say("I'm starting to feel the effects!");
     const bodyPartList: ArrayList = player.getBodyDamage().getBodyParts();
     if (bodyPartList) {
       if (this.initialStiffness.isEmpty()) {
@@ -44,17 +51,54 @@ export class AntiInflammatory extends Drug {
       }
       for (let n = 0; n < this.initialStiffness.size(); n++) {
         const currStiffness = bodyPartList.get(n).getStiffness();
-        const reduction = Math.floor(this.initialStiffness.get(n) / 5.0);
+        const targetStiffness = currStiffness - 0.24 * 2 * this.onsetCycles;
+        const reduction = luautils.round(targetStiffness / this.onsetCycles, 2);
         bodyPartList
           .get(n)
           .setStiffness(Math.max(currStiffness - reduction, 0));
       }
     }
   };
+
+  public doPlateau: (cycle: number, player: IsoPlayer) => void = (
+    cycle: number,
+    player: IsoPlayer
+  ) => {
+    if (cycle == 0) player.Say("The effects have reached their max strength.");
+  };
+
+  public doOffset: (
+    cycle: number,
+    player: IsoPlayer,
+    totalCycles: number
+  ) => void = (cycle: number, player: IsoPlayer, totalCycles: number) => {
+    if (cycle == 0) player.Say("The effects are starting to wear off...");
+    const bodyPartList: ArrayList = player.getBodyDamage().getBodyParts();
+    if (bodyPartList) {
+      for (let n = 0; n < bodyPartList.size(); n++) {
+        const targetStiffness =
+          this.initialStiffness.get(n) - 0.24 * totalCycles;
+        const increase = luautils.round(
+          (bodyPartList.get(n).getStiffness() + targetStiffness) /
+            this.offsetCycles,
+          2
+        );
+        bodyPartList
+          .get(n)
+          .setStiffness(
+            Math.min(
+              bodyPartList.get(n).getStiffness() + increase,
+              targetStiffness
+            )
+          );
+      }
+    }
+  };
 }
 
 export class DrugInstance {
-  public cycles: number = 0;
+  public currentCycles: number = 0;
+  public totalCycles: number = 0;
   public drug: Drug;
   public player: IsoPlayer;
   public finished: boolean = false;
@@ -65,23 +109,43 @@ export class DrugInstance {
   }
 
   public doCycle: Function = () => {
-    if (this.cycles < this.drug.delayCycles) {
-    } else if (this.cycles < this.drug.onsetCycles) {
-      this.drug.doOnset(this.cycles, this.player);
-    } else if (this.cycles < this.drug.onsetCycles + this.drug.plateauCycles) {
-      this.drug.doPlateau(this.cycles, this.player);
-    } else if (
-      this.cycles <
-      this.drug.onsetCycles + this.drug.plateauCycles + this.drug.offsetCycles
+    switch (this.drug.cycle) {
+      case Cycles.Delay:
+        break;
+      case Cycles.Onset:
+        this.drug.doOnset(this.currentCycles, this.player);
+        break;
+      case Cycles.Plateau:
+        this.drug.doPlateau(this.currentCycles, this.player);
+        break;
+      case Cycles.Offset:
+        this.drug.doOffset(this.currentCycles, this.player, this.totalCycles);
+        break;
+    }
+    this.totalCycles++;
+    this.currentCycles++;
+    if (
+      // Delay Cycles done or
+      (this.currentCycles > this.drug.delayCycles &&
+        this.drug.cycle == Cycles.Delay) ||
+      // Onset Cycles done or
+      (this.currentCycles > this.drug.onsetCycles &&
+        this.drug.cycle == Cycles.Onset) ||
+      // Plateau Cycles done or
+      (this.currentCycles > this.drug.plateauCycles &&
+        this.drug.cycle == Cycles.Plateau) ||
+      // Offset Cycles done
+      (this.currentCycles > this.drug.offsetCycles &&
+        this.drug.cycle == Cycles.Offset)
     ) {
-      this.drug.doOffset(this.cycles, this.player);
-    } else this.finished = true;
-
-    this.cycles++;
+      // Move to the next cycle type and reset
+      this.drug.cycle++;
+      this.currentCycles = 0;
+    }
   };
 }
 
-everyTenMinutes.addListener(() => {
+everyOneMinute.addListener(() => {
   const player = getPlayer();
   const drugList = (player.getModData().drugsTaken as [DrugInstance]) || [];
   if (drugList) {
