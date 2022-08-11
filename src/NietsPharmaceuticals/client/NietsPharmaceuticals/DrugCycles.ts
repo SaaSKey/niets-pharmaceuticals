@@ -1,5 +1,13 @@
-import { getPlayer, IsoPlayer } from "PipeWrench";
-import { everyTenMinutes } from "PipeWrench-Events";
+import {
+  ArrayList,
+  BodyDamage,
+  BodyPart,
+  getPlayer,
+  IsoPlayer,
+  luautils,
+  Math,
+} from "PipeWrench";
+import { everyOneMinute, everyTenMinutes } from "PipeWrench-Events";
 
 enum Cycles {
   Delay,
@@ -22,10 +30,26 @@ class Drug {
 }
 
 export class AntiInflammatory extends Drug {
-  public onsetCycles: number = 6;
+  public onsetCycles: number = 100;
+  public initialStiffness: ArrayList = new ArrayList();
 
   public doOnset: Function = (cycle: number, player: IsoPlayer) => {
     player.Say(`Cycle number ${cycle}`);
+    const bodyPartList: ArrayList = player.getBodyDamage().getBodyParts();
+    if (bodyPartList) {
+      if (this.initialStiffness.isEmpty()) {
+        for (let n = 0; n < bodyPartList.size(); n++) {
+          this.initialStiffness.add(bodyPartList.get(n).getStiffness());
+        }
+      }
+      for (let n = 0; n < this.initialStiffness.size(); n++) {
+        const currStiffness = bodyPartList.get(n).getStiffness();
+        const reduction = Math.floor(this.initialStiffness.get(n) / 5.0);
+        bodyPartList
+          .get(n)
+          .setStiffness(Math.max(currStiffness - reduction, 0));
+      }
+    }
   };
 }
 
@@ -61,8 +85,9 @@ everyTenMinutes.addListener(() => {
   const player = getPlayer();
   const drugList = (player.getModData().drugsTaken as [DrugInstance]) || [];
   if (drugList) {
-    for (const drug of drugList) {
+    drugList.forEach((drug) => {
       drug.doCycle();
-    }
+    });
+    player.getModData().drugsTaken = drugList.filter((drug) => !drug.finished);
   }
 });
