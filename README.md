@@ -1,5 +1,7 @@
-#Niet's Pharmaceuticals
-##Items
+# Niet's Pharmaceuticals
+
+## Items
+
 **Anti Inflammatory**
 
 Reduces the effect/duration of exercise fatigue.
@@ -36,7 +38,7 @@ _Requires First Aid 5_
 
 Greatly reduce pain. Greatly increase tiredness. Greatly increase drunkenness. Greatly reduce speed of all timed actions and movement speed. Requires a filled IV bag.
 
-##Drug Stages
+## Drug Stages
 
 **Effect Delay**
 
