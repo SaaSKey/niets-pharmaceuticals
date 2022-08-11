@@ -1,4 +1,10 @@
-import { ISBaseTimedAction, ISLogSystem, IsoGridSquare, IsoPlayer, ISTimedActionQueue } from "PipeWrench"
+import {
+  ISBaseTimedAction,
+  ISLogSystem,
+  IsoGridSquare,
+  IsoPlayer,
+  ISTimedActionQueue,
+} from "PipeWrench";
 
 /**
  * Test Action
@@ -7,42 +13,40 @@ import { ISBaseTimedAction, ISLogSystem, IsoGridSquare, IsoPlayer, ISTimedAction
  * @returns Return the action
  */
 export function TestAction(character: IsoPlayer, square: IsoGridSquare) {
-    const action = new ISBaseTimedAction(character)
-    action.Type = "TestAction"
-    action.maxTime = 80
-    action.stopOnAim = true
-    action.stopOnRun = true
-    action.stopOnWalk = true
+  const action = new ISBaseTimedAction(character);
+  action.Type = "TestAction";
+  action.maxTime = 80;
+  action.stopOnAim = true;
+  action.stopOnRun = true;
+  action.stopOnWalk = true;
 
-    // isValid
-    action.isValid = () => {
-        return square != null
-    }
+  // isValid
+  action.isValid = () => {
+    return square != null;
+  };
 
-    // start
-    action.start = () => {
-        character.Say(`${character.getUsername()} is doing Test Action!`)
-    }
+  // start
+  action.start = () => {
+    character.Say(`${character.getUsername()} is doing Test Action!`);
+  };
 
-    // update
-    action.update = () => {
+  // update
+  action.update = () => {};
 
-    }
+  // stop
+  action.stop = () => {
+    character.Say(`${character.getUsername()} has stopped Test Action!`);
 
-    // stop
-    action.stop = () => {
-        character.Say(`${character.getUsername()} has stopped Test Action!`)
-        
-        ISTimedActionQueue.getTimedActionQueue(character).resetQueue()
-    }
+    ISTimedActionQueue.getTimedActionQueue(character).resetQueue();
+  };
 
-    // perform
-    action.perform = () => {
-        character.Say(`${character.getUsername()} has performed Test Action!`)
+  // perform
+  action.perform = () => {
+    character.Say(`${character.getUsername()} has performed Test Action!`);
 
-        ISTimedActionQueue.getTimedActionQueue(character).onCompleted(action)
-        ISLogSystem.logAction(action)
-    }
+    ISTimedActionQueue.getTimedActionQueue(character).onCompleted(action);
+    ISLogSystem.logAction(action);
+  };
 
-    return action
+  return action;
 }
