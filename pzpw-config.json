@@ -1,0 +1,24 @@
+{
+    "mods": {
+        "NietsPharmaceuticals": {
+            "name": "Niet's Pharmaceuticals",
+            "description": "My new mod description.",
+            "poster": "poster.png",
+            "icon": "icon.png"
+        }
+    },
+    "workshop": {
+        "id": -1,
+        "title": "Niet's Pharmaceuticals",
+        "author": "SaaSKey",
+        "visibility": "public",
+        "mods": [
+            "NietsPharmaceuticals"
+        ],
+        "tags": [
+            "Build 41"
+        ]
+    },
+    "typings": {},
+    "cachedir": "D:/Zomboid"
+}

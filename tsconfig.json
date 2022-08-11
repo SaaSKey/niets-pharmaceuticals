@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "lib":["ESNext"],
+    "module":"ESNext",
+    "moduleResolution": "node",
+    "strict": true,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "rootDirs": ["./src/"],
+    "outDir": "",
+    "target":"ESNext",
+    "typeRoots": [
+      "./.typings",
+      "node_modules/PipeWrench", 
+      "node_modules/PipeWrench-Utils", 
+      "node_modules/PipeWrench-Events", 
+      "node_modules/@types", 
+      "lua-types/5.1"
+    ],
+    "types": ["lua-types/5.1"]
+  },
+  "tstl": {
+    "noHeader": true,
+    "noImplicitSelf": true
+  },
+  "exclude": ["node_modules"],
+  "include": [
+    "./src/**/*.ts",
+    "./.typings/**/*.d.ts",
+  ]
+}
