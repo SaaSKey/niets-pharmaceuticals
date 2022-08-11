@@ -1,7 +1,7 @@
 {
-    "name": "pzpw-template",
+    "name": "niets-pharmaceuticals",
     "version": "1.0.0",
-    "description": "Main template used by PZPW when setting up a new project.",
+    "description": "Adds several new types of medication to Project Zomboid.",
     "main": "",
     "scripts": {
         "clean": "del-cli --force ./dist ./workshop ./declaration",
@@ -10,28 +10,29 @@
         "compile-development": "node ./.compiler/compiler.js development",
         "compile-declaration": "node ./.compiler/compiler.js declaration",
         "compile-workshop": "node ./.compiler/compiler.js workshop",
-        "ccw": "npm run clean && npm run compile-workshop"
-    },
+        "clean-distribution": "node ./.compiler/compiler.js clean-distribution",
+        "clean-workshop": "node ./.compiler/compiler.js clean-workshop",
+        "ccw": "npm run clean-distribution && npm run clean-workshop && npm run compile-workshop"
+      },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/Konijima/PipeWrenchTemplate.git"
+        "url": "git+https://github.com/SaaSKey/niets-pharmaceuticals.git"
     },
     "keywords": [
         "Project Zomboid",
-        "asledgehammer",
         "PipeWrench",
-        "Modding Framework"
+        "PZPW",
+        "Mod"
     ],
-    "author": "asledgehammer",
+    "author": "SaaSKey",
     "contributors": [
-        "Konijima",
-        "Zed"
+        "Konijima"
     ],
     "license": "ISC",
     "bugs": {
-        "url": "https://github.com/Konijima/PipeWrenchTemplate/issues"
+        "url": "https://github.com/SaaSKey/niets-pharmaceuticals/issues"
     },
-    "homepage": "https://github.com/Konijima/PipeWrenchTemplate",
+    "homepage": "https://github.com/SaaSKey/niets-pharmaceuticals",
     "dependencies": {
         "PipeWrench": "github:asledgehammer/PipeWrench#stable",
         "PipeWrench-Events": "github:asledgehammer/PipeWrench-Events",
