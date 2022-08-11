@@ -1,4 +1,5 @@
 import {
+  DrainableComboItem,
   getSpecificPlayer,
   getText,
   InventoryItem,
@@ -62,11 +63,9 @@ onFillInventoryObjectContextMenu.addListener(
             );
             const tooltip = new ISToolTip();
             tooltip.setName(`Take ${item.getDisplayName()}`);
-            const conditionPercent = luautils.round(
-              (item.getCondition() / item.getConditionMax()) * 10,
-              2
-            );
-            tooltip.description = `Left: ${conditionPercent}`;
+            tooltip.description = `Left: ${(
+              item as DrainableComboItem
+            ).getRemainingUses()}`;
             option.toolTip = tooltip;
           }
         }

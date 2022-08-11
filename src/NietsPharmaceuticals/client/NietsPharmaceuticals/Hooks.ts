@@ -1,8 +1,8 @@
 import {
   ISTakePillAction,
   IsoPlayer,
-  InventoryItem,
   _instanceof_,
+  DrainableComboItem,
 } from "PipeWrench";
 import { hookInto } from "PipeWrench-Utils";
 
@@ -11,13 +11,13 @@ hookInto(
   "ISTakePillAction:perform",
   (_perform: Function, self: ISTakePillAction) => {
     const player = self.character as IsoPlayer;
-    const item = self.item as InventoryItem;
+    const item = self.item as DrainableComboItem;
 
     player.Say(`I took a ${item.getDisplayName()}!`);
     if (item.getType() == "AntiInflammatory") {
       player.getModData().antiInflammatoryTaken = true;
     }
-
+    item.Use();
     return _perform(self);
   }
 );

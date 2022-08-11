@@ -3,14 +3,18 @@ module NietPharma {
     Base
   }
 
-  item AntiInflammatory {
-    DisplayCategory = FirstAid,
-    Weight = 0.2,
-    Type = Drainable,
-    DisplayName = Anti-Inflammatory Pills,
-    Icon = PillsPainkiller,
-    StaticModel = PillBottle,
-    WorldStaticModel = PainKillers_Ground,
-    Medical = TRUE,
-  }
+	item AntiInflammatory
+	{
+	  DisplayCategory = FirstAid,
+		Weight	=	0.2,
+		Type	=	Drainable,
+    UseDelta	=	0.1,
+		UseWhileEquipped	=	FALSE,
+		DisplayName	=	Painkillers,
+		Icon	=	PillsPainkiller,
+		Tooltip = Tooltip_Painkillers,
+		StaticModel = PillBottle,
+		WorldStaticModel = PainKillers_Ground,
+		Medical = TRUE,
+	}
 }
