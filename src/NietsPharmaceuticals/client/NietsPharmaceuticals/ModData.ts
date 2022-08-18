@@ -1,5 +1,5 @@
 import { DrugInstance } from "./DrugCycles";
 
 export interface npModData {
-  drugsTaken: [DrugInstance];
+  [name: string]: [DrugInstance];
 }

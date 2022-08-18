@@ -17,18 +17,25 @@ enum Cycles {
 }
 
 interface Drug {
+  name: string;
   cycle: Cycles;
   delayCycles: number;
   onsetCycles: number;
   plateauCycles: number;
   offsetCycles: number;
 
-  doOnset: (cycle: number, player: IsoPlayer) => void;
-  doPlateau: (cycle: number, player: IsoPlayer) => void;
-  doOffset: (cycle: number, player: IsoPlayer, totalCycles: number) => void;
+  doOnset: (cycle: number, player: IsoPlayer, strengthMulti: number) => void;
+  doPlateau: (cycle: number, player: IsoPlayer, strengthMulti: number) => void;
+  doOffset: (
+    cycle: number,
+    player: IsoPlayer,
+    strengthMulti: number,
+    totalCycles: number
+  ) => void;
 }
 
 export class AntiInflammatory implements Drug {
+  public name: string = "AntiInflammatory";
   public cycle: Cycles = Cycles.Delay;
   public delayCycles: number = 30;
   public onsetCycles: number = 30;
@@ -37,10 +44,11 @@ export class AntiInflammatory implements Drug {
 
   public initialStiffness: ArrayList = new ArrayList();
 
-  public doOnset: (cycle: number, player: IsoPlayer) => void = (
+  public doOnset: (
     cycle: number,
-    player: IsoPlayer
-  ) => {
+    player: IsoPlayer,
+    strengthMulti: number
+  ) => void = (cycle: number, player: IsoPlayer, strengthMulti: number) => {
     if (cycle == 0) player.Say("I'm starting to feel the effects!");
     const bodyPartList: ArrayList = player.getBodyDamage().getBodyParts();
     if (bodyPartList) {
@@ -51,7 +59,7 @@ export class AntiInflammatory implements Drug {
       }
       for (let n = 0; n < this.initialStiffness.size(); n++) {
         const currStiffness = bodyPartList.get(n).getStiffness();
-        const targetStiffness = currStiffness - 0.24 * 2 * this.onsetCycles;
+        const targetStiffness = currStiffness - 50 * strengthMulti;
         const reduction = luautils.round(targetStiffness / this.onsetCycles, 2);
         bodyPartList
           .get(n)
@@ -60,16 +68,18 @@ export class AntiInflammatory implements Drug {
     }
   };
 
-  public doPlateau: (cycle: number, player: IsoPlayer) => void = (
+  public doPlateau: (
     cycle: number,
-    player: IsoPlayer
-  ) => {
+    player: IsoPlayer,
+    strengthMulti: number
+  ) => void = (cycle: number, player: IsoPlayer, strengthMulti: number) => {
     if (cycle == 0) player.Say("The effects have reached their max strength.");
   };
 
   public doOffset: (
     cycle: number,
     player: IsoPlayer,
+    strengthMulti: number,
     totalCycles: number
   ) => void = (cycle: number, player: IsoPlayer, totalCycles: number) => {
     if (cycle == 0) player.Say("The effects are starting to wear off...");
@@ -102,10 +112,12 @@ export class DrugInstance {
   public drug: Drug;
   public player: IsoPlayer;
   public finished: boolean = false;
+  public strengthMulti: number = 1;
 
-  public constructor(drug: Drug, player: IsoPlayer) {
+  public constructor(drug: Drug, player: IsoPlayer, strengthMulti: number) {
     this.drug = drug;
     this.player = player;
+    this.strengthMulti = strengthMulti;
   }
 
   public doCycle: Function = () => {
@@ -113,13 +125,22 @@ export class DrugInstance {
       case Cycles.Delay:
         break;
       case Cycles.Onset:
-        this.drug.doOnset(this.currentCycles, this.player);
+        this.drug.doOnset(this.currentCycles, this.player, this.strengthMulti);
         break;
       case Cycles.Plateau:
-        this.drug.doPlateau(this.currentCycles, this.player);
+        this.drug.doPlateau(
+          this.currentCycles,
+          this.player,
+          this.strengthMulti
+        );
         break;
       case Cycles.Offset:
-        this.drug.doOffset(this.currentCycles, this.player, this.totalCycles);
+        this.drug.doOffset(
+          this.currentCycles,
+          this.player,
+          this.strengthMulti,
+          this.totalCycles
+        );
         break;
     }
     this.totalCycles++;
@@ -145,13 +166,24 @@ export class DrugInstance {
   };
 }
 
+export interface TakenDrugs {
+  [name: string]: DrugInstance[];
+}
+
 everyOneMinute.addListener(() => {
   const player = getPlayer();
-  const drugList = (player.getModData().drugsTaken as [DrugInstance]) || [];
+  const modData = player.getModData();
+  const drugList = modData.drugsTaken as TakenDrugs;
+
   if (drugList) {
-    drugList.forEach((drug) => {
-      drug.doCycle();
-    });
-    player.getModData().drugsTaken = drugList.filter((drug) => !drug.finished);
+    for (const drugType in drugList) {
+      print(drugType);
+      drugList[drugType].forEach((drug) => {
+        drug.doCycle();
+      });
+      modData.drugsTaken[drugType] = drugList[drugType].filter(
+        (drug) => !drug.finished
+      );
+    }
   }
 });
